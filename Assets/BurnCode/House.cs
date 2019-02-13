@@ -5,6 +5,7 @@ using UnityEngine;
 public class House : MonoBehaviour
 {
     public GameObject SpritePlane;
+    public GameObject CollisionObject; 
 
     public AudioClip Nom;
     public AudioClip Ding; 
@@ -68,6 +69,7 @@ public class House : MonoBehaviour
         DeathSource.PlayOneShot(Nom); 
         BurnLogic.instance.HousesEaten++;
         BurnLogic.instance.HousesDestoyed++;
+        CollisionObject.SetActive(false);
     }
 
     public void OnDeathFire()
@@ -80,5 +82,6 @@ public class House : MonoBehaviour
         DeathSource.PlayOneShot(Ding);
         BurnLogic.instance.HousesBurned++;
         BurnLogic.instance.HousesDestoyed++;
+        CollisionObject.SetActive(false);
     }
 }

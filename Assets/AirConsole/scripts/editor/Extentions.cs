@@ -141,9 +141,7 @@ namespace NDream.AirConsole.Editor {
 					break;
 				}
 			}
-            //localIP = "132.177.197.98";
-
-            return localIP;
+			return localIP;
 		}
 	}
 }
