@@ -73,9 +73,11 @@ public class GamestateExampleLogic : MonoBehaviour {
 	public void SetView(string viewName){
 		//I don't need to replace the entire game state, I can just set the view property
 		AirConsole.instance.SetCustomDeviceStateProperty("view", viewName);
+        //AirConsole.instance.SetCustomDeviceStateProperty()
+        //AirConsole.instance.GetProfilePicture();
 
-		//the controller listens for the onCustomDeviceStateChanged event. See the  controller-gamestates.html file for how this is handled there. 
-	}
+        //the controller listens for the onCustomDeviceStateChanged event. See the  controller-gamestates.html file for how this is handled there. 
+    }
 
 	public void LogCurrentScreenState(){
 		Debug.Log ("screen CustomDeviceState: " + AirConsole.instance.GetCustomDeviceState (0));

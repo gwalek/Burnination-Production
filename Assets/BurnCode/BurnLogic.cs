@@ -66,6 +66,11 @@ public class BurnLogic : MonoBehaviour
             {
                 GetController(deviceID).SpawnGnome();
             }
+
+            if (message == "showprofile")
+            {
+                GetController(deviceID).ShowProfileImage();
+            }
         }
     }
 
@@ -88,6 +93,7 @@ public class BurnLogic : MonoBehaviour
     {
         Controller c = gameObject.AddComponent<Controller>();
         c.deviceID = deviceID;
+        c.GetProfileImage(); 
         PlayerTable.Add(deviceID, c); 
     }
 

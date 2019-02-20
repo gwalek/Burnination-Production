@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI; 
 
 
 public class Gnome : MonoBehaviour
@@ -8,7 +9,8 @@ public class Gnome : MonoBehaviour
     public Controller Master; 
     public bool IsDead = false;
     public Transform SpawnPoint;
-    public GameObject SpawnPrefab; 
+    public GameObject SpawnPrefab;
+    public RawImage Profile; 
     GnomeState state = GnomeState.Idle; 
 
     public Material Idle;
@@ -169,9 +171,8 @@ public class Gnome : MonoBehaviour
         IsDead = true;
         MoveDirection = Vector3.zero;
         DeathSource.PlayOneShot(Wilhelm, .7f);
-        Master.Deaths++;
-        Master.DeathsByFire++;
-        Master.DeadGnome();
+    
+        Master.DeadGnomeByFire();
     }
     public void OnDeathStomp()
     {
@@ -182,9 +183,8 @@ public class Gnome : MonoBehaviour
         PlayStompSound();
         IsDead = true;
         MoveDirection = Vector3.zero;
-        Master.Deaths++;
-        Master.DeathsByStomp++;
-        Master.DeadGnome();
+       
+        Master.DeadGnomeByStomp();
     }
 
 
