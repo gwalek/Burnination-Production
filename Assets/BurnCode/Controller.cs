@@ -165,11 +165,6 @@ public class Controller : MonoBehaviour
         // Send Message to Device ID show PostGame Div
     }
 
-    public void PreGame()
-    {
-        // Send Message to Device ID show PreGame Div
-    }
-
     public void Disconnect()
     {
         if (pawn)

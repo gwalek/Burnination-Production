@@ -7,20 +7,33 @@
     <style type=text/css>
   /* the style sheet dictates what our elements (buttons, backgrounds etc.) will look like. */
 
-      .button {
-          background: #3B3B3B;
-          color: white;
-          font-family: Arial;
-          font-size: 32px;
-          padding: 5px 10px 5px 10px;
-          border: solid #1f1f1f 5px;
-          -webkit-border-radius: 11;
-          -moz-border-radius: 11;
-          border-radius: 6px;
-          width: 100%;
-          text-align: left;
-          box-sizing: border-box;
-      }
+        .button {
+            background: #3B3B3B;
+            color: white;
+            font-family: Arial;
+            font-size: 18px;
+            padding: 5px 10px 5px 10px;
+            border: solid #1f1f1f 5px;
+            -webkit-border-radius: 11;
+            -moz-border-radius: 11;
+            border-radius: 6px;
+            width: 100%;
+            text-align: left;
+            box-sizing: border-box;
+        }
+
+        .view {
+            margin-top: 75px
+        }
+
+        #profile-pic {
+            position: absolute;
+            background-size: cover;
+            width: 75px;
+            height: 75px;
+            right: 2%;
+            top: 2%;
+        }
   </style>
   
   <script type="text/javascript">
@@ -31,10 +44,17 @@
        */
       function App() {
           var me = this;
-          me.airconsole = new AirConsole({ "orientation": "portrait", "synchronize_time": "true" });
-          me.airconsole.onMessage = function (from, data) {
+          me.airconsole = new AirConsole({ "orientation": "landscape", "synchronize_time": "true" });
+
+          me.airconsole.onMessage = function (from, data) { 
               console.log("onMessage", from, data);
               document.getElementById("content").innerHTML = "device " + from + " says: " + data;
+          };
+
+          me.airconsole.onReady = function (code) {
+              var picUrl = me.airconsole.getProfilePicture();
+              //console.log(picUrl);
+              document.getElementById("profile-pic").style.backgroundImage = "url(" + picUrl + ")";
           };
       /*
        * Here we are adding support for mouse events manually.
@@ -69,12 +89,40 @@
           this.airconsole.broadcast(msg);
       };
 
+      App.prototype.displayProfilePicture = function () {
+          var picUrl = this.airconsole.getProfilePicture();
+          //console.log(picUrl);
+          document.getElementById("profile-pic").style.backgroundImage = "url(" + picUrl + ")";
+      };
+
+      App.prototype.OnDeathFire = function () {
+          this.airconsole.vibrate(500); 
+      };
+
+      App.prototype.OnDeathStomp = function () {
+          this.airconsole.vibrate(500);
+      };
+
+      App.prototype.OnSpawned = function () {
+      };
+
+      App.prototype.OnPreGame = function () {
+      };
+
+      App.prototype.OnPostGame = function () {
+      };
+
+
+
   </script>
 </head>
 <body onload="window.app = new App()">
     <!-- Add your HTML elements here -->
-    <img src="Title.png" />
-    <div style="margin-top:50px">
+    <div>
+        <div id="profile-pic" ontouchstart="window.app.sendMessageToScreen('showprofile')"></div>
+    </div>
+    
+    <div class="view" id="Playing">
         <div class="button" ontouchstart="window.app.sendMessageToScreen('left')" ontouchend="window.app.sendMessageToScreen('stop')">Left</div>
         <div class="button" ontouchstart="window.app.sendMessageToScreen('right')" ontouchend="window.app.sendMessageToScreen('stop')">Right</div>
         <div class="button" ontouchstart="window.app.sendMessageToScreen('up')" ontouchend="window.app.sendMessageToScreen('stop')">Up</div>
@@ -82,8 +130,6 @@
         <div class="button">...</div>
         <div class="button" ontouchstart="window.app.sendMessageToScreen('shoot')">Shoot</div>
         <div class="button" ontouchstart="window.app.sendMessageToScreen('respawn')">Respawn</div>
-        <div class="button" ontouchstart="window.app.sendMessageToScreen('showprofile')">Show Profile Img</div>
-
     </div>
 </body>
 </html>
