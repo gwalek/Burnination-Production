@@ -144,7 +144,10 @@ public class Gnome : MonoBehaviour
         GameObject newArrow = Instantiate(SpawnPrefab, SpawnPoint.position, SpawnPoint.rotation);
         Arrow a = newArrow.GetComponent<Arrow>();
         a.SetHitLocation(Dragon.instance.GetHitLocation());
-        DeathSource.PlayOneShot(ArrowShot, .33f);
+
+        // Moved this sound to the Phone. 
+        // DeathSource.PlayOneShot(ArrowShot, .33f);
+
         a.Owner = Master;
         Master.ArrowShot++; 
  
@@ -170,7 +173,9 @@ public class Gnome : MonoBehaviour
         state = GnomeState.DeadFire;
         IsDead = true;
         MoveDirection = Vector3.zero;
-        DeathSource.PlayOneShot(Wilhelm, .7f);
+
+        // Moved this sound to the Phone. 
+        //DeathSource.PlayOneShot(Wilhelm, .7f);
     
         Master.DeadGnomeByFire();
     }
@@ -180,7 +185,10 @@ public class Gnome : MonoBehaviour
         { return; } // We're already dead!
 
         state = GnomeState.DeadStomp;
-        PlayStompSound();
+
+        // Moved this sound to the Phone. 
+        //PlayStompSound();
+
         IsDead = true;
         MoveDirection = Vector3.zero;
        

@@ -107,10 +107,10 @@ public class Controller : MonoBehaviour
 
     public void DeadGnomeByFire()
     {
-        
         DeathsByFire++;
         DeadGnome();
         //Show Dead by Fire Respawn DIV
+        AirConsole.instance.Message(deviceID, "DeathFire");
     }
 
     public void DeadGnomeByStomp()
@@ -118,6 +118,7 @@ public class Controller : MonoBehaviour
         DeathsByStomp++;
         DeadGnome();
         //Show Dead by Stomp Respawn DIV
+        AirConsole.instance.Message(deviceID, "DeathStomp");
     }
 
     public void DeadGnome()
@@ -132,14 +133,10 @@ public class Controller : MonoBehaviour
             DamageDelt_Best = DamageDelt_CurrentLife;
         }
         
-
         if (ArrowShot_CurrentLife > ArrowShot_Best)
         {
             ArrowShot_Best = ArrowShot_CurrentLife;
         }
-
-
-
     }
 
     public void SpawnGnome()
@@ -154,8 +151,10 @@ public class Controller : MonoBehaviour
         Gnome g = newG.GetComponent<Gnome>();
         pawn = g;
         g.Master = this;
-        // Send Message to Device ID show Alive DIV
 
+        // Send Message to Device ID show Alive DIV
+        AirConsole.instance.Message(deviceID, "Playing");
+   
         DamageDelt_CurrentLife = 0;
         ArrowShot_CurrentLife = 0;
     }
@@ -163,6 +162,7 @@ public class Controller : MonoBehaviour
     public void PostGame()
     {
         // Send Message to Device ID show PostGame Div
+        AirConsole.instance.Message(deviceID, "PostGame");
     }
 
     public void Disconnect()

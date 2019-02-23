@@ -23,7 +23,7 @@
         }
 
         .view {
-            margin-top: 75px
+            margin-top: 50px
         }
 
         #profile-pic {
@@ -34,6 +34,47 @@
             right: 2%;
             top: 2%;
         }
+
+        .dpad-absolute-container {
+            background-image: url('dpad-absolute.png');
+        }
+
+        .dpad-arrow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0px;
+            left: 0px;
+            background-size: 90% auto;
+            background-repeat: no-repeat;
+            background-position: 50% 50%;
+            display: none;
+        }
+
+       
+        
+        /* Absolute arrows */
+        .dpad-absolute .dpad-arrow-active {
+            background-size: 100% auto;
+        }
+
+        .dpad-arrow-up {
+            background-image: url('dpad-absolute-up.png');
+        }
+
+        .dpad-arrow-down {
+            background-image: url('dpad-absolute-down.png');
+        }
+
+        .dpad-arrow-left {
+            background-image: url('dpad-absolute-left.png');
+        }
+
+        .dpad-arrow-right {
+            background-image: url('dpad-absolute-right.png');
+        }
+
+
   </style>
   
   <script type="text/javascript">
@@ -45,17 +86,51 @@
       function App() {
           var me = this;
           me.airconsole = new AirConsole({ "orientation": "landscape", "synchronize_time": "true" });
+          me.deathSound = new Audio("Dead.wav");
+          me.Sound_Wilhelm = new Audio("Wilhelm.wav");
+          me.Sound_Stomp1 = new Audio("Stomp1.wav");
+          me.Sound_Stomp2 = new Audio("Stomp1.wav"); 
+          me.Sound_Stomp3 = new Audio("Stomp1.wav"); 
+          me.Sound_Stomp4 = new Audio("Stomp1.wav"); 
+          me.Sound_Wif = new Audio("Wif.wav"); 
 
-          me.airconsole.onMessage = function (from, data) { 
-              console.log("onMessage", from, data);
-              document.getElementById("content").innerHTML = "device " + from + " says: " + data;
-          };
+          me.views = {};
+
+          me.SetupViews(); 
+          me.ShowView("EnterGame"); 
+
 
           me.airconsole.onReady = function (code) {
               var picUrl = me.airconsole.getProfilePicture();
               //console.log(picUrl);
               document.getElementById("profile-pic").style.backgroundImage = "url(" + picUrl + ")";
           };
+
+          me.airconsole.onMessage = function (from, data) {
+              console.log("onMessage", from, data);
+              //document.getElementById("content").innerHTML = "device " + from + " says: " + data;
+              if (data == "Playing") {
+                  //console.log("switch to Playing"); 
+                  me.OnSpawned();
+              }
+
+              if (data == "DeathStomp") {
+                  //console.log("switch to Playing"); 
+                  me.OnDeathStomp();
+              }
+
+              if (data == "DeathFire") {
+                  //console.log("switch to Playing"); 
+                  me.OnDeathFire();
+              }
+
+              if (data == "PostGame") {
+                  //console.log("switch to Playing"); 
+                  me.OnPostGame();
+              }
+
+          };
+
       /*
        * Here we are adding support for mouse events manually.
        * --> WE STRONGLY ENCOURAGE YOU TO USE THE AIRCONSOLE CONTROLS LIBRARY
@@ -95,47 +170,106 @@
           document.getElementById("profile-pic").style.backgroundImage = "url(" + picUrl + ")";
       };
 
+      App.prototype.HideAllViews = function () {
+          for (var key in this.views) {
+              this.views[key].style.display = "none";
+          }
+      };
+
+      App.prototype.SetupViews = function() {
+          var viewlist = document.querySelectorAll('.view');
+          console.log(viewlist);
+          for (var i = 0; i < viewlist.length; i++) {
+              var view = viewlist[i];
+              var id = view.id;
+              this.views[id] = view;
+              console.log(id); 
+          }
+          console.log(this.views); 
+      };
+
+      App.prototype.ShowView = function (id) {
+          this.HideAllViews();
+          this.views[id].style.display = "block";
+      };
+
       App.prototype.OnDeathFire = function () {
+          
+          this.Sound_Wilhelm.play();
+          this.ShowView("DeadFire");
           this.airconsole.vibrate(500); 
       };
 
       App.prototype.OnDeathStomp = function () {
+         
+          this.Sound_Stomp1.play();
+          this.ShowView("DeadStomp");
           this.airconsole.vibrate(500);
       };
 
       App.prototype.OnSpawned = function () {
+          this.ShowView("Playing");
       };
 
-      App.prototype.OnPreGame = function () {
+      App.prototype.OnEnterGame = function () {
+          this.ShowView("EnterGame");
       };
 
       App.prototype.OnPostGame = function () {
+          this.ShowView("PostGame");
       };
 
+      App.prototype.OnShoot = function () {
+          this.Sound_Wif.play();
+          this.sendMessageToScreen('shoot'); 
+      };
 
 
   </script>
 </head>
 <body onload="window.app = new App()">
     <!-- Add your HTML elements here -->
+    <img src="Title.png" />
     <div>
         <div id="profile-pic" ontouchstart="window.app.sendMessageToScreen('showprofile')"></div>
     </div>
 
     <div class="view" id="Playing">
+        <div class="button" ontouchstart="window.app.OnShoot()">Shoot</div>
+     <!--
+    <div>
+        <div class ="dpad-arrow" id="dpad-arrow-up"></div>
+        <div class ="dpad-arrow" id="dpad-arrow-down"></div>
+        <div class ="dpad-arrow" id="dpad-arrow-left"></div>
+        <div class ="dpad-arrow" id="dpad-arrow-right"></div>
+
+    </div>
+
+    -->
         <div class="button" ontouchstart="window.app.sendMessageToScreen('left')" ontouchend="window.app.sendMessageToScreen('stop')">Left</div>
         <div class="button" ontouchstart="window.app.sendMessageToScreen('right')" ontouchend="window.app.sendMessageToScreen('stop')">Right</div>
         <div class="button" ontouchstart="window.app.sendMessageToScreen('up')" ontouchend="window.app.sendMessageToScreen('stop')">Up</div>
         <div class="button" ontouchstart="window.app.sendMessageToScreen('down')" ontouchend="window.app.sendMessageToScreen('stop')">Down</div>
-        <div class="button">...</div>
-        <div class="button" ontouchstart="window.app.sendMessageToScreen('shoot')">Shoot</div>
-        <div class="button" ontouchstart="window.app.sendMessageToScreen('respawn')">Respawn</div>
+
     </div>
 
-    <div class="view" id="DeadFire"></div>
-    
-    <div class="view" id="DeadStomp"></div>
+        <div class="view" id="DeadFire">
+            You are Dead by fire!
+            <div class="button" ontouchstart="window.app.sendMessageToScreen('respawn')">Respawn</div>
+        </div>
 
+        <div class="view" id="DeadStomp">
+            You are Dead by stomp!
+            <div class="button" ontouchstart="window.app.sendMessageToScreen('respawn')">Respawn</div>
+        </div>
 
-</body>
-</html>
+        <div class="view" id="EnterGame">
+            <div class="button" ontouchstart="window.app.sendMessageToScreen('respawn')">Join Game</div>
+        </div>
+
+        <div class="view" id="PostGame">
+
+        </div>
+
+    </body>
+    </html>
