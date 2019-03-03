@@ -10,6 +10,12 @@ public class Arrow : MonoBehaviour
     Vector3 HitLocation = Vector3.zero;
     int damage = 0;
     public Controller Owner; 
+    public float lifetime = 7.0f;
+
+    void Start()
+    {
+        Destroy(gameObject, lifetime);    
+    }
 
 
     // Update is called once per frame
@@ -18,11 +24,9 @@ public class Arrow : MonoBehaviour
         transform.position += (MoveDirection* ArrowSpeed * Time.deltaTime);
         if (IsClosetoHitPoint())
         {
-            Owner.DamageDelt += damage;
-            Dragon.instance.TakeDamage(damage, HitLocation); 
+            Dragon.instance.TakeDamage(damage, HitLocation, Owner); 
             Destroy(gameObject); 
-            
-
+    
         }
     }
 

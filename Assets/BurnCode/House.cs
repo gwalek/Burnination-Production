@@ -26,12 +26,20 @@ public class House : MonoBehaviour
     
     AudioSource DeathSource;
 
+    public void Reset()
+    {
+        IsOnFire = false;
+        isDead = false;
+        CollisionObject.SetActive(true);
+        currentSprite = HouseList[Random.Range(0, (HouseList.Count - 1))];
+        SetSprite();
+    }
+
     void Start()
     {
         SpriteR = SpritePlane.GetComponent<Renderer>();
-        currentSprite = HouseList[Random.Range(0, (HouseList.Count - 1))];
-        SetSprite();
-        DeathSource = gameObject.AddComponent<AudioSource>(); 
+        DeathSource = gameObject.AddComponent<AudioSource>();
+        Reset(); 
     }
 
     void SetSprite()

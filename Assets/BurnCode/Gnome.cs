@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI; 
 
 
-public class Gnome : MonoBehaviour
+public class Gnome : Pawn
 {
     public Controller Master; 
     public bool IsDead = false;
@@ -112,35 +112,41 @@ public class Gnome : MonoBehaviour
         { OnShoot(); }
     }
 
-    public void OnMoveUp()
+    public override void OnMoveUp()
     {
         MoveDirection = Vector3.forward;
         state = GnomeState.Walking;
     }
-    public void OnMoveDown()
+    public override void OnMoveDown()
     {
         MoveDirection = Vector3.back;
         state = GnomeState.Walking;
     }
-    public void OnMoveLeft()
+    public override void OnMoveLeft()
     {
         MoveDirection = Vector3.left;
         SpritePlane.transform.localScale = FaceBack * SpritePlaneSize;
         state = GnomeState.Walking;
     }
-    public void OnMoveRight()
+    public override void OnMoveRight()
     {
         MoveDirection = Vector3.right;
         SpritePlane.transform.localScale = FaceForward * SpritePlaneSize;
         state = GnomeState.Walking;
     }
-    public void OnStopMove()
+    public override void OnStopMove()
     {
         MoveDirection = Vector3.zero;
         state = GnomeState.Idle;
     }
-    public void OnShoot()
+    public override void OnShoot()
     {
+        if (Dragon.instance.state == DragonState.Dying)
+        {
+            //if the Dragon is Dying, don't shoot more arrows
+            return; 
+        }
+
         GameObject newArrow = Instantiate(SpawnPrefab, SpawnPoint.position, SpawnPoint.rotation);
         Arrow a = newArrow.GetComponent<Arrow>();
         a.SetHitLocation(Dragon.instance.GetHitLocation());

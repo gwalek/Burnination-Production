@@ -15,7 +15,7 @@ public class Controller : MonoBehaviour
     public int deviceID = -1;
      
     // Fresh Meat. *cough* Who's being controlled 
-    public Gnome pawn;
+    public Pawn pawn;
 
     // Stat Tracking Variables
     public int Deaths=0;
@@ -30,9 +30,9 @@ public class Controller : MonoBehaviour
     public float DamagePerArrow = 0f;
 
     // For Later Expansion of the Game
-    int ShieldUsed = 0;
-    int BuildUsed = 0;
-    int BucketUsed = 0;
+    //int ShieldUsed = 0;
+    //int BuildUsed = 0;
+    //int BucketUsed = 0;
 
     // Profile Image on Pawn Variables
     Texture profileTexture; 
@@ -43,7 +43,24 @@ public class Controller : MonoBehaviour
     public float ProfileBlinkToggle = .5f;
     public float ProfileToggleAfter = 2; 
     public float NextToggle = 0; 
-    public float ProfileCounter = 0; 
+    public float ProfileCounter = 0;
+
+
+    public void Reset()
+    {
+        Deaths = 0;
+        DeathsByFire = 0;
+        DeathsByStomp = 0;
+        DamageDelt_CurrentLife = 0;
+        ArrowShot_CurrentLife = 0;
+        DamageDelt_Best = 0;
+        ArrowShot_Best = 0;
+        DamageDelt = 0;
+        ArrowShot = 0;
+        DamagePerArrow = 0f;
+        pawn = null;
+        
+    }
 
     void Update()
     {
@@ -81,9 +98,14 @@ public class Controller : MonoBehaviour
 
     public void Blinktoggle()
     {
+        if (pawn.IsMonster)
+        {
+            return; 
+        }
         NextToggle += ProfileBlinkToggle;
-        BlinkState = !BlinkState; 
-        pawn.Profile.gameObject.SetActive(BlinkState);
+        BlinkState = !BlinkState;
+        Gnome g = ((Gnome)pawn);
+        g.Profile.gameObject.SetActive(BlinkState);
     }
     public void StartGame()
     {
@@ -92,17 +114,27 @@ public class Controller : MonoBehaviour
     }
     public void StartShowingProfile()
     {
+        if (pawn.IsMonster)
+        {
+            return;
+        }
         IsShowingProfileImage = true;
         BlinkState = true;
         ProfileCounter = 0;
         NextToggle = ProfileToggleAfter;
-        pawn.Profile.gameObject.SetActive(true);
+        Gnome g = ((Gnome)pawn);
+        g.Profile.gameObject.SetActive(true);
     }
 
     public void EndShowingProfile()
     {
+        if (pawn.IsMonster)
+        {
+            return;
+        }
         IsShowingProfileImage = false;
-        pawn.Profile.gameObject.SetActive(false);
+        Gnome g = ((Gnome)pawn);
+        g.Profile.gameObject.SetActive(false);
     }
 
     public void DeadGnomeByFire()
@@ -139,6 +171,23 @@ public class Controller : MonoBehaviour
         }
     }
 
+    public void Spawn()
+    {
+        if (BurnLogic.instance.gameStatus == GameStatus.PreGame)
+        {
+            PreGame(); 
+        }
+        if (BurnLogic.instance.gameStatus == GameStatus.Game)
+        {
+            SpawnGnome(); 
+        }
+        if (BurnLogic.instance.gameStatus == GameStatus.PostGame)
+        {
+            PostGame(); 
+        }
+
+    }
+
     public void SpawnGnome()
     {
         if (pawn != null)
@@ -161,15 +210,41 @@ public class Controller : MonoBehaviour
 
     public void PostGame()
     {
-        // Send Message to Device ID show PostGame Div
-        AirConsole.instance.Message(deviceID, "PostGame");
+        if (AirConsole.instance.GetMasterControllerDeviceId() == deviceID)
+        {
+            // Send Message to Device ID show Master PostGame Div
+            AirConsole.instance.Message(deviceID, "MasterPostGame");
+        }
+        else
+        {
+            // Send Message to Device ID show PostGame Div
+            AirConsole.instance.Message(deviceID, "PostGame");
+        }        
+    }
+
+    public void PreGame()
+    {
+        //Debug.Log("PreGame on " + deviceID);
+        //Debug.Log("Master ID: " + AirConsole.instance.GetMasterControllerDeviceId()); 
+
+        if (AirConsole.instance.GetMasterControllerDeviceId() == deviceID)
+        {
+            // Send Message to Device ID show Master PreGame Div
+            AirConsole.instance.Message(deviceID, "MasterPreGame");
+        }
+        else
+        {
+            // Send Message to Device ID show PreGame Div
+            AirConsole.instance.Message(deviceID, "PreGame");
+        }
+        
     }
 
     public void Disconnect()
     {
         if (pawn)
         {
-            Destroy(pawn); 
+            Destroy(pawn.gameObject); 
             pawn = null; 
         }
     }
@@ -231,10 +306,16 @@ public class Controller : MonoBehaviour
             // No Gnome to show the image on!
         }
     
+        if (pawn.IsMonster)
+        {
+            return; 
+        }
+
         if (profileTexture)
         {
             //Debug.Log(deviceID + " ShowProfile - has Texture and pawn");
-            pawn.Profile.texture = profileTexture;
+            Gnome g = (Gnome)pawn;
+            g.Profile.texture = profileTexture;
             StartShowingProfile();
         }
         else

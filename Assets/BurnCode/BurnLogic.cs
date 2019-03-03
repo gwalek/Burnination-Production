@@ -6,15 +6,33 @@ using Newtonsoft.Json.Linq;
 
 public class BurnLogic : MonoBehaviour
 {
+    public GameStatus gameStatus = GameStatus.PreGame;  
     public static BurnLogic instance;
     public GameObject GnomePrefab;
     public float Spawnoffset = 16f;
     public Dictionary<int, Controller> PlayerTable;
+   
+    public string sessionCode = "";
+    
+    public GameObject CurrentMusic;
+    public GameObject Music_MainMenu;
+    public GameObject Music_Game;
+    public GameObject Music_PostGame;
+
+    // Session Stats
     public int HousesBurned = 0;
     public int HousesEaten = 0;
     public int HousesDestoyed = 0;
-    public string sessionCode = ""; 
-    // Start is called before the first frame update
+    public Controller GotLastHit;
+
+    private void Reset()
+    {
+        HousesBurned = 0;
+        HousesEaten = 0;
+        HousesDestoyed = 0;
+        GotLastHit = null;
+    }
+
     void Awake()
     {
         instance = this;
@@ -24,6 +42,11 @@ public class BurnLogic : MonoBehaviour
         AirConsole.instance.onDisconnect += OnDisconnect;
         AirConsole.instance.onGameEnd += OnGameEnd;
         PlayerTable = new Dictionary<int, Controller>();
+    }
+
+    private void Start()
+    {
+        CurrentMusic = Instantiate(Music_MainMenu); 
     }
 
     void OnMessage(int deviceID, JToken data)
@@ -64,12 +87,29 @@ public class BurnLogic : MonoBehaviour
 
             if (message == "respawn")
             {
-                GetController(deviceID).SpawnGnome();
+                GetController(deviceID).Spawn();
             }
 
             if (message == "showprofile")
             {
                 GetController(deviceID).ShowProfileImage();
+            }
+
+            if (message == "mainmenu")
+            {
+                MainMenu();
+            }
+
+            if (message == "startgame")
+            {
+                GameBegin(); 
+               
+            }
+            if (message == "startgameasdragon")
+            {
+                GameBegin();
+                ConntectToDragon(); 
+
             }
         }
     }
@@ -107,8 +147,71 @@ public class BurnLogic : MonoBehaviour
         GetController(deviceID).StartGame();
     }
 
-    void OnGameEnd()
+    public void OnGameEnd()
     {
+        // Music Was destroyed already
+        CurrentMusic = Instantiate(Music_PostGame);
+        gameStatus = GameStatus.PostGame;
+
+        foreach (KeyValuePair<int, Controller> entry in PlayerTable)
+        {
+            entry.Value.PostGame();
+        }
+    }
+
+    public void MainMenu()
+    {
+        Debug.Log("MainMenu called");
+        Destroy(CurrentMusic);
+        CurrentMusic = Instantiate(Music_MainMenu);
+        gameStatus = GameStatus.PreGame;
+        foreach (KeyValuePair<int, Controller> entry in PlayerTable)
+        {
+            entry.Value.pawn = null; 
+            entry.Value.PreGame();
+        }
+        Gnome[] gList = GameObject.FindObjectsOfType<Gnome>();
+        Debug.Log("gList Gnomes: " + gList.Length); 
+        foreach (Gnome g in gList)
+        {
+            Destroy(g.gameObject); 
+        }
+    }
+
+    public void GameBegin()
+    {
+        Debug.Log("StartGame called");
+        Reset(); 
+        Destroy(CurrentMusic);
+        CurrentMusic = Instantiate(Music_Game);
+        gameStatus = GameStatus.Game;
+        Dragon.instance.Restart();
+        // Call restart on all the houses... 
+        House[] houses = GameObject.FindObjectsOfType<House>(); 
+        foreach (House h in houses)
+        {
+            h.Reset(); 
+        }
+
+        //Tell All Controlers to Spawn in & Reset
+        foreach (KeyValuePair<int, Controller> entry in PlayerTable)
+        {
+            entry.Value.Reset(); 
+            entry.Value.SpawnGnome(); 
+        }
+
+            // Hide the Main Menu Canvas
+            // Show Game Canvas
+
+        }
+
+    void ConntectToDragon()
+    {
+        Controller c = GetController(AirConsole.instance.GetMasterControllerDeviceId());
+        Destroy(c.pawn.gameObject);
+        c.pawn = Dragon.instance;
+        Dragon.instance.HasController = true; 
+
     }
 
     void Update()

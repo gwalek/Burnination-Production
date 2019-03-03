@@ -2,16 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Dragon : MonoBehaviour
+public class Dragon : Pawn
 {
     public static Dragon instance;
-    public int MaxHealth = 10000;
+    public bool HasController = false; 
+    public int MaxHealth = 10;
     public int Health = 10000; 
-    DragonState state = DragonState.Idle; 
+    public DragonState state = DragonState.Idle; 
     public Material Idle;
     public Material Walk1;
     public Material Walk2;
     public Material Walk3;
+    public Material Dead; 
 
     public Material Flame1;
     public Material Flame2;
@@ -45,6 +47,9 @@ public class Dragon : MonoBehaviour
     List<bool> BreathStepList = new List<bool>();
     int BreathStep = 0;
     public float MoveSpeed = 4f;
+    public float DyingAngle = 90f;
+    public float DyingTime = 3;
+    public float NoAttackUnderPercent = .01f;
 
     public GameObject SpritePlane;
     public GameObject FlameSpritePlane; 
@@ -52,47 +57,93 @@ public class Dragon : MonoBehaviour
     Renderer FameSpriteR; 
     Rigidbody RB;
     Vector3 MoveDirection = Vector3.zero;
-    public List<Transform> HitLocations; 
+    public List<Transform> HitLocations;
+    public Vector3 StartingPosition;
+    public Quaternion StartingRotation; 
 
     private void Awake()
     {
-        instance = this; 
-
+        instance = this;
+        IsMonster = true; 
     }
     void Start()
     {
         //currentSprite = Idle;
-        state = DragonState.Walking;
+        
         SpriteR = SpritePlane.GetComponent<Renderer>();
         FameSpriteR = FlameSpritePlane.GetComponent<Renderer>();
         RB = gameObject.GetComponent<Rigidbody>();
-        FlameSource = gameObject.AddComponent<AudioSource>(); 
+        FlameSource = gameObject.AddComponent<AudioSource>();
+        StartingPosition = gameObject.transform.position;
+        StartingRotation = gameObject.transform.rotation; 
+        Restart(); 
 
+    }
+
+    public void Restart()
+    {
+        state = DragonState.Idle;
+        Health = MaxHealth;
+        gameObject.transform.position = StartingPosition;
+        gameObject.transform.rotation = StartingRotation;
+        HasController = false;
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        PlayerInput();
-        RB.velocity = MoveDirection * MoveSpeed;
+        if (state == DragonState.Dead)
+        {
+            return; 
+        }
+
+
+        if (state == DragonState.Dying) 
+        {
+            RB.velocity = Vector3.zero;
+        } 
+        else
+        {
+            if (!HasController)
+            {
+                PlayerInput();
+            }
+            
+            RB.velocity = MoveDirection * MoveSpeed;
+        }
 
         UpdateSprite();
     }
 
-    public void TakeDamage(int damage, Vector3 location)
+    public void TakeDamage(int damage, Vector3 location, Controller player)
     {
-        if (damage < 1)
+        // No More Damage after hitting Zero
+        // Ignore arrows that don't have damage. 
+        if ( (damage < 1) || (Health < 1) ) 
         { return; }
 
         Health -= damage;
-        // Spawn effect based on Damage
+        player.DamageDelt += damage;
 
+        // Death Check
+        if (Health <= 0)
+        {
+            Debug.Log("Dead");
+            state = DragonState.Dying;
+            BreathTimeCounter = 0;
+            BurnLogic.instance.GotLastHit = player;
+            Destroy(BurnLogic.instance.CurrentMusic);
+
+        }
+        
+        // Spawn effect based on Damage
         if (damage == 1)
         { Instantiate(Star1, location, Quaternion.identity); return;  }
         if (damage == 2)
         { Instantiate(Star2, location, Quaternion.identity); return;  }
         if (damage >= 3)
         { Instantiate(Star3, location, Quaternion.identity); return;  }
+
     }
 
     public Vector3 GetHitLocation()
@@ -104,7 +155,6 @@ public class Dragon : MonoBehaviour
     // Not going to worry about AI if I have these controls for now. 
     void PlayerInput()
     {
-        MoveDirection = Vector3.zero;
         // Ignore input while fire breathing
         if (state == DragonState.FireBreathing)
         { return; }
@@ -115,47 +165,60 @@ public class Dragon : MonoBehaviour
 
 
         state = DragonState.Idle;
-
+        MoveDirection = Vector3.zero; 
         if (Input.GetKey(KeyCode.I))
-        { OnMoveUp(); }
+        { OnMoveUp();   return; }
         if (Input.GetKey(KeyCode.K))
-        { OnMoveDown(); }
+        { OnMoveDown(); return; }
         if (Input.GetKey(KeyCode.J))
-        { OnMoveLeft(); }
+        { OnMoveLeft(); return; }
         if (Input.GetKey(KeyCode.L))
-        { OnMoveRight(); ; }
+        { OnMoveRight(); return; }
      
 
     }
 
-    public void OnMoveUp()
+    public override void OnMoveUp()
     {
         MoveDirection = Vector3.forward;
         state = DragonState.Walking;
     }
-    public void OnMoveDown()
+    public override void OnMoveDown()
     {
         MoveDirection = Vector3.back;
         state = DragonState.Walking;
     }
-    public void OnMoveLeft()
+    public override void OnMoveLeft()
     {
         MoveDirection = Vector3.left;
         state = DragonState.Walking;
     }
-    public void OnMoveRight()
+    public override void OnMoveRight()
     {
         MoveDirection = Vector3.right;
         state = DragonState.Walking;
     }
-    public void OnStopMove()
+    public override void OnStopMove()
     {
-       
+        MoveDirection = Vector3.zero;
+        state = DragonState.Idle;
+    }
+
+    public override void OnShoot()
+    {
+        DoBreathAttack(); 
     }
 
     void DoBreathAttack()
     {
+
+        if (Health <= (((float)MaxHealth) * NoAttackUnderPercent))
+        {
+            // Don't do a breath attack under 1%
+            return;
+        }
         state = DragonState.FireBreathing;
+        MoveDirection = Vector3.zero;
         BreathTimeCounter = 0;
         BreathStep = 0;
 
@@ -169,7 +232,7 @@ public class Dragon : MonoBehaviour
         BreathStepList.Add(true);// Frame 6
         BreathStepList.Add(true);// Frame 7
 
-        FlameSource.PlayOneShot(FlameAttack, .7f); 
+        FlameSource.PlayOneShot(FlameAttack, .7f);
     }
 
 
@@ -184,6 +247,9 @@ public class Dragon : MonoBehaviour
         {
             case DragonState.Idle:
                 currentSprite = Idle;
+                break;
+            case DragonState.Dying:
+                AnimateDying();
                 break;
             case DragonState.Walking:
                 frame = frame % 5;
@@ -202,6 +268,29 @@ public class Dragon : MonoBehaviour
         Material[] mats = SpriteR.materials;
         mats[0] = currentSprite;
         SpriteR.materials = mats;
+    }
+
+    void AnimateDying()
+    {
+        currentSprite = Dead;
+        BreathTimeCounter += Time.fixedDeltaTime;
+
+        if (BreathTimeCounter < 1)
+        {
+            return;
+        }
+
+        float value = BreathTimeCounter - 1;
+        float angle = value * (DyingAngle / DyingTime);
+        angle = Mathf.Clamp(angle, 0f, DyingAngle); 
+        Quaternion rot = Quaternion.Euler(angle,180f,0); 
+        gameObject.transform.rotation = rot; 
+
+        if (value > DyingTime)
+        {
+            state = DragonState.Dead;
+            BurnLogic.instance.OnGameEnd();
+        }
     }
 
     void AnimateFire()

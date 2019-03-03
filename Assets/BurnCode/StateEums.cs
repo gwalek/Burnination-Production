@@ -13,6 +13,7 @@ public enum DragonState
     Idle,
     Walking,
     FireBreathing, 
+    Dying,
     Dead
 }
 

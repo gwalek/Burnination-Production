@@ -6,6 +6,11 @@
 
     <style type=text/css>
         /* the style sheet dictates what our elements (buttons, backgrounds etc.) will look like. */
+        * {
+            color: white;
+            font-family: Arial;
+            font-size: 18px;
+        }
 
         .button {
             background: #3B3B3B;
@@ -122,10 +127,27 @@
                     me.OnDeathFire();
                 }
 
+                if (data == "PreGame") {
+                    //console.log("switch to Playing");
+                    me.OnPreGame();
+                }
+
+                if (data == "MasterPreGame") {
+                    //console.log("switch to Playing");
+                    me.OnMasterPreGame();
+                }
+
                 if (data == "PostGame") {
                     //console.log("switch to Playing");
                     me.OnPostGame();
                 }
+
+                if (data == "MasterPostGame") {
+                    //console.log("switch to Playing");
+                    me.OnMasterPostGame();
+                }
+
+              
 
             };
 
@@ -191,6 +213,11 @@
             this.views[id].style.display = "block";
         };
 
+        App.prototype.OnShoot = function () {
+            this.Sound_Wif.play();
+            this.sendMessageToScreen('shoot');
+        };
+
         App.prototype.OnDeathFire = function () {
 
             this.Sound_Wilhelm.play();
@@ -214,13 +241,26 @@
         };
 
         App.prototype.OnPostGame = function () {
+            console.log("OnPostGame called");
             this.ShowView("PostGame");
         };
 
-        App.prototype.OnShoot = function () {
-            this.Sound_Wif.play();
-            this.sendMessageToScreen('shoot');
+        App.prototype.OnMasterPostGame = function () {
+            console.log("OnMasterPostGame called");
+            this.ShowView("MasterPostGame");
+        }
+
+        App.prototype.OnPreGame = function () {
+            //console.log("OnPreGame called");
+            this.ShowView("PreGame");
         };
+
+        App.prototype.OnMasterPreGame = function () {
+            //console.log("OnMasterPreGame called");
+            this.ShowView("MasterPreGame");
+        }
+
+    
 
 
     </script>
@@ -267,8 +307,25 @@
         <div class="button" ontouchstart="window.app.sendMessageToScreen('respawn')">Join Game</div>
     </div>
 
-    <div class="view" id="PostGame">
+    <div class="view" id="PreGame">
+        Hold On! Game is about to begin!<br /><br />
+        Can't find yourself? Click the Profile picture to show it over your Gnome.<br /><br />
+        [Here: Thank Heroes or encourage going Hero] 
+    </div>
 
+    <div class="view" id="MasterPreGame">
+        When Ready, Start The Game
+        <div class="button" ontouchstart="window.app.sendMessageToScreen('startgame')">Start Game with Keyboard Dragon</div>
+        <div class="button" ontouchstart="window.app.sendMessageToScreen('startgameasdragon')">Start Game as Dragon</div>
+        <div class="button" >(Coming Soon)Play With AI Dragon</div>
+    </div>
+
+    <div class="view" id="PostGame">
+        Hurray! The Day is saved!
+    </div>
+
+    <div class="view" id="MasterPostGame">
+        <div class="button" ontouchstart="window.app.sendMessageToScreen('mainmenu')">Return to Main Menu</div>
     </div>
 
 </body>
