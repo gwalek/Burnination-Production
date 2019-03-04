@@ -115,38 +115,48 @@
                 if (data == "Playing") {
                     //console.log("switch to Playing");
                     me.OnSpawned();
+                    return; 
                 }
 
                 if (data == "DeathStomp") {
                     //console.log("switch to Playing");
                     me.OnDeathStomp();
+                    return; 
                 }
 
                 if (data == "DeathFire") {
                     //console.log("switch to Playing");
                     me.OnDeathFire();
+                    return; 
                 }
 
                 if (data == "PreGame") {
                     //console.log("switch to Playing");
                     me.OnPreGame();
+                    return; 
                 }
 
                 if (data == "MasterPreGame") {
                     //console.log("switch to Playing");
                     me.OnMasterPreGame();
+                    return; 
                 }
 
                 if (data == "PostGame") {
                     //console.log("switch to Playing");
                     me.OnPostGame();
+                    return; 
                 }
 
                 if (data == "MasterPostGame") {
                     //console.log("switch to Playing");
                     me.OnMasterPostGame();
+                    return; 
                 }
 
+                var TitleInt = parseInt(data);
+                console.log("TitleInt: " + TitleInt); 
+                me.DisplayTitles(TitleInt); 
               
 
             };
@@ -207,6 +217,33 @@
             }
             console.log(this.views);
         };
+
+        App.prototype.DisplayTitles = function (intFlags) {
+            var titles = ""; 
+            titles = titles + this.AddTitle(intFlags, 0, "The Champion<br>");
+            titles = titles + this.AddTitle(intFlags, 1, "Big Bad Bruiser<br>");
+            titles = titles + this.AddTitle(intFlags, 2, "The Sun Blocker<br>");
+            titles = titles + this.AddTitle(intFlags, 3, "Robin of Gnomley<br>");
+            titles = titles + this.AddTitle(intFlags, 4, "Had A Bad Bow<br>");
+            titles = titles + this.AddTitle(intFlags, 5, "Captain Flapjack<br>");
+            titles = titles + this.AddTitle(intFlags, 6, "Flambeau PitMaster<br>");
+            titles = titles + this.AddTitle(intFlags, 7, "Phoenix, Risee<br>");
+            titles = titles + this.AddTitle(intFlags, 8, "Totally Disposable<br>");
+            titles = titles + this.AddTitle(intFlags, 9, "Came To Play<br>");
+            console.log("titles: " + titles);
+            document.getElementById("Titles").innerHTML = titles;
+            document.getElementById("TitlesMaster").innerHTML = titles;
+        }
+
+        App.prototype.AddTitle = function(int, flag, text) {
+            var result = "";
+            if ((int & (1 << flag)) != 0) {
+                result = text;
+            }
+            return result;
+        }
+
+
 
         App.prototype.ShowView = function (id) {
             this.HideAllViews();
@@ -322,10 +359,12 @@
 
     <div class="view" id="PostGame">
         Hurray! The Day is saved!
+        <div id="Titles"></div>
     </div>
 
     <div class="view" id="MasterPostGame">
         <div class="button" ontouchstart="window.app.sendMessageToScreen('mainmenu')">Return to Main Menu</div>
+        <div id="TitlesMaster"></div>
     </div>
 
 </body>

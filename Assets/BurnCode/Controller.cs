@@ -29,6 +29,9 @@ public class Controller : MonoBehaviour
     public int ArrowShot = 0;
     public float DamagePerArrow = 0f;
 
+    // For Passing Titles to Device ID by Bits 
+    public int TitleFlags = 0; 
+
     // For Later Expansion of the Game
     //int ShieldUsed = 0;
     //int BuildUsed = 0;
@@ -58,8 +61,26 @@ public class Controller : MonoBehaviour
         DamageDelt = 0;
         ArrowShot = 0;
         DamagePerArrow = 0f;
+        TitleFlags = 0; 
         pawn = null;
-        
+    }
+
+    private void Start()
+    {
+        TitleTest();
+    }
+
+    private void TitleTest()
+    {
+        AddTitle(TitlesFlagEnum.TheChampion);
+        AddTitle(TitlesFlagEnum.TheSunBlocker);
+        Debug.Log("TitleFlags: " + TitleFlags);
+        SendTitles(); 
+    }
+
+    public void SendTitles()
+    {
+        AirConsole.instance.Message(deviceID, TitleFlags.ToString());
     }
 
     void Update()
@@ -93,6 +114,11 @@ public class Controller : MonoBehaviour
             }
 
         }
+    }
+
+    public void AddTitle(TitlesFlagEnum t)
+    {
+        TitleFlags += (1 << (int)t); 
     }
 
 

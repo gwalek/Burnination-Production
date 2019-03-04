@@ -46,7 +46,7 @@ public class HUD : MonoBehaviour
 
     void UpdateGamePannels()
     {
-        HealthValue.text = (( (float)Dragon.instance.Health/ (float)Dragon.instance.MaxHealth)*100).ToString()+"%";
+        //HealthValue.text = (( (float)Dragon.instance.Health/ (float)Dragon.instance.MaxHealth)*100).ToString()+"%";
         HouseBurnCount.text = BurnLogic.instance.HousesBurned.ToString();
         HouseEatCount.text = BurnLogic.instance.HousesEaten.ToString();
 
