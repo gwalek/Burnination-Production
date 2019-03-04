@@ -31,6 +31,7 @@ public class Dragon : Pawn
     public GameObject FlameTrigger2;
     public GameObject FlameTrigger3;
     public AudioClip FlameAttack;
+    public AudioClip DeadSound; 
     AudioSource FlameSource;
 
     public GameObject Star1;
@@ -133,6 +134,7 @@ public class Dragon : Pawn
             BreathTimeCounter = 0;
             BurnLogic.instance.GotLastHit = player;
             Destroy(BurnLogic.instance.CurrentMusic);
+            FlameSource.PlayOneShot(DeadSound); 
 
         }
         

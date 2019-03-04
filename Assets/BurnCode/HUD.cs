@@ -1,17 +1,25 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI; 
+using UnityEngine.UI;
+using NDream.AirConsole;
+using Newtonsoft.Json.Linq;
 
 public class HUD : MonoBehaviour
 {
+    public static HUD instance; 
     public GameObject GamePannel;
     public GameObject PreGamePannel;
     public GameObject PostGamePannel;
+    public GameObject SubBar; 
 
-    public List<GameObject> PannelList; 
-   
-    public Text HealthValue;
+    public List<GameObject> PannelList;
+    public List<GameObject> ChampionPanelList;
+    public List<RawImage> ChampionImageList;
+    public List<Text> ChampionNickName;
+
+    public GameObject HealthValue;
+    public Vector3 HudHeathVector = Vector3.one; 
     public Text HouseBurnCount;
     public Text HouseEatCount;
     public Text GnomeFireDeaths;
@@ -22,7 +30,12 @@ public class HUD : MonoBehaviour
 
     public float counter = 0;
     public float MaxTime = 10f;
-    public int PannelIndex = 0; 
+    public int PannelIndex = 0;
+
+    private void Awake()
+    {
+        instance = this; 
+    }
 
     void Start()
     {
@@ -41,12 +54,34 @@ public class HUD : MonoBehaviour
         }
         SessionCode.text = BurnLogic.instance.sessionCode; 
 
+    }
 
+    public void SetTitle (TitlesFlagEnum t, Controller c)
+    {
+        int index = (int)t;
+        if (!c)
+        {
+            ChampionPanelList[index].SetActive(false);
+            return; 
+        }
+
+        ChampionPanelList[index].SetActive(true);
+        string nickname = AirConsole.instance.GetNickname(c.deviceID); 
+        ChampionNickName[index].text = nickname; 
+
+        if (!c.profileTexture)
+        {
+            ChampionImageList[index].enabled = false;
+            return; 
+        }
+        ChampionImageList[index].enabled = true;
+        ChampionImageList[index].texture = c.profileTexture; 
     }
 
     void UpdateGamePannels()
     {
-        //HealthValue.text = (( (float)Dragon.instance.Health/ (float)Dragon.instance.MaxHealth)*100).ToString()+"%";
+        HudHeathVector.x = ((float)Dragon.instance.Health / (float)Dragon.instance.MaxHealth);
+        HealthValue.transform.localScale = HudHeathVector;
         HouseBurnCount.text = BurnLogic.instance.HousesBurned.ToString();
         HouseEatCount.text = BurnLogic.instance.HousesEaten.ToString();
 

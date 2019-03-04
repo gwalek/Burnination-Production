@@ -29,6 +29,7 @@ public class Controller : MonoBehaviour
     public int ArrowShot = 0;
     public float DamagePerArrow = 0f;
 
+    public bool IsMonster = false;
     // For Passing Titles to Device ID by Bits 
     public int TitleFlags = 0; 
 
@@ -38,7 +39,7 @@ public class Controller : MonoBehaviour
     //int BucketUsed = 0;
 
     // Profile Image on Pawn Variables
-    Texture profileTexture; 
+    public Texture profileTexture; 
     string url = "";
     public bool IsShowingProfileImage = false;
     public bool BlinkState = true; 
@@ -63,11 +64,12 @@ public class Controller : MonoBehaviour
         DamagePerArrow = 0f;
         TitleFlags = 0; 
         pawn = null;
-    }
+        IsMonster = false;
+}
 
     private void Start()
     {
-        TitleTest();
+        //TitleTest();
     }
 
     private void TitleTest()
@@ -236,6 +238,17 @@ public class Controller : MonoBehaviour
 
     public void PostGame()
     {
+        TitleFlags = 0; // will be calculated next in Burn Logic
+
+        if (ArrowShot == 0)
+        {
+            DamagePerArrow = -10;
+        }
+        else
+        {
+            DamagePerArrow = ((float)DamageDelt / (float)ArrowShot);
+        }
+
         if (AirConsole.instance.GetMasterControllerDeviceId() == deviceID)
         {
             // Send Message to Device ID show Master PostGame Div
