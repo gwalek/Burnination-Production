@@ -1,0 +1,371 @@
+
+<html>
+<head>
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <script type="text/javascript" src="https://www.airconsole.com/api/airconsole-1.7.0.js"></script>
+
+    <style type=text/css>
+        /* the style sheet dictates what our elements (buttons, backgrounds etc.) will look like. */
+        * {
+            color: white;
+            font-family: Arial;
+            font-size: 18px;
+        }
+
+        .button {
+            background: #3B3B3B;
+            color: white;
+            font-family: Arial;
+            font-size: 18px;
+            padding: 5px 10px 5px 10px;
+            border: solid #1f1f1f 5px;
+            -webkit-border-radius: 11;
+            -moz-border-radius: 11;
+            border-radius: 6px;
+            width: 100%;
+            text-align: left;
+            box-sizing: border-box;
+        }
+
+        .view {
+            margin-top: 40px
+        }
+
+        #profile-pic {
+            position: absolute;
+            background-size: cover;
+            width: 75px;
+            height: 75px;
+            right: 2%;
+            top: 2%;
+        }
+
+        .dpad-absolute-container {
+            background-image: url('dpad-absolute.png');
+        }
+
+        .dpad-arrow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0px;
+            left: 0px;
+            background-size: 90% auto;
+            background-repeat: no-repeat;
+            background-position: 50% 50%;
+            display: none;
+        }
+
+
+
+        /* Absolute arrows */
+        .dpad-absolute .dpad-arrow-active {
+            background-size: 100% auto;
+        }
+
+        .dpad-arrow-up {
+            background-image: url('dpad-absolute-up.png');
+        }
+
+        .dpad-arrow-down {
+            background-image: url('dpad-absolute-down.png');
+        }
+
+        .dpad-arrow-left {
+            background-image: url('dpad-absolute-left.png');
+        }
+
+        .dpad-arrow-right {
+            background-image: url('dpad-absolute-right.png');
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        var airconsole;
+        /**
+         * Sets up the communication to the screen.
+         */
+        function App() {
+            var me = this;
+            me.airconsole = new AirConsole({ "orientation": "landscape", "synchronize_time": "true" });
+            me.deathSound = new Audio("Dead.wav");
+            me.Sound_Wilhelm = new Audio("Wilhelm.wav");
+            me.Sound_Stomp1 = new Audio("Stomp1.wav");
+            me.Sound_Stomp2 = new Audio("Stomp1.wav");
+            me.Sound_Stomp3 = new Audio("Stomp1.wav");
+            me.Sound_Stomp4 = new Audio("Stomp1.wav");
+            me.Sound_Wif = new Audio("Wif.wav");
+
+            me.views = {};
+
+            me.SetupViews();
+            me.ShowView("EnterGame");
+
+
+            me.airconsole.onReady = function (code) {
+                var picUrl = me.airconsole.getProfilePicture();
+                //console.log(picUrl);
+                document.getElementById("profile-pic").style.backgroundImage = "url(" + picUrl + ")";
+            };
+
+            me.airconsole.onMessage = function (from, data) {
+                console.log("onMessage", from, data);
+                //document.getElementById("content").innerHTML = "device " + from + " says: " + data;
+                if (data == "Playing") {
+                    //console.log("switch to Playing");
+                    me.OnSpawned();
+                    return; 
+                }
+
+                if (data == "DeathStomp") {
+                    //console.log("switch to Playing");
+                    me.OnDeathStomp();
+                    return; 
+                }
+
+                if (data == "DeathFire") {
+                    //console.log("switch to Playing");
+                    me.OnDeathFire();
+                    return; 
+                }
+
+                if (data == "PreGame") {
+                    //console.log("switch to Playing");
+                    me.OnPreGame();
+                    return; 
+                }
+
+                if (data == "MasterPreGame") {
+                    //console.log("switch to Playing");
+                    me.OnMasterPreGame();
+                    return; 
+                }
+
+                if (data == "PostGame") {
+                    //console.log("switch to Playing");
+                    me.OnPostGame();
+                    return; 
+                }
+
+                if (data == "MasterPostGame") {
+                    //console.log("switch to Playing");
+                    me.OnMasterPostGame();
+                    return; 
+                }
+
+                var TitleInt = parseInt(data);
+                console.log("TitleInt: " + TitleInt); 
+                me.DisplayTitles(TitleInt); 
+              
+
+            };
+
+            /*
+             * Here we are adding support for mouse events manually.
+             * --> WE STRONGLY ENCOURAGE YOU TO USE THE AIRCONSOLE CONTROLS LIBRARY
+             * WHICH IS EVEN BETTER (BUT WE DONT WANT TO BLOAT THE CODE HERE).
+             * https://github.com/AirConsole/airconsole-controls/
+             *
+             * DO NOT USE ONCLICK HANDLERS.
+             * THEY ADD A 200MS DELAY!
+             */
+            if (!("ontouchstart" in document.createElement("div"))) {
+                var elements = document.getElementsByTagName("*");
+                for (var i = 0; i < elements.length; ++i) {
+                    var element = elements[i];
+                    var ontouchstart = element.getAttribute("ontouchstart");
+                    if (ontouchstart) {
+                        element.setAttribute("onmousedown", ontouchstart);
+                    }
+                    var ontouchend = element.getAttribute("ontouchend");
+                    if (ontouchend) {
+                        element.setAttribute("onmouseup", ontouchend);
+                    }
+                }
+            }
+        }
+
+        App.prototype.sendMessageToScreen = function (msg) {
+            this.airconsole.message(AirConsole.SCREEN, { "action": msg });
+        };
+
+        App.prototype.broadcastMessage = function (msg) {
+            this.airconsole.broadcast(msg);
+        };
+
+        App.prototype.displayProfilePicture = function () {
+            var picUrl = this.airconsole.getProfilePicture();
+            //console.log(picUrl);
+            document.getElementById("profile-pic").style.backgroundImage = "url(" + picUrl + ")";
+        };
+
+        App.prototype.HideAllViews = function () {
+            for (var key in this.views) {
+                this.views[key].style.display = "none";
+            }
+        };
+
+        App.prototype.SetupViews = function () {
+            var viewlist = document.querySelectorAll('.view');
+            console.log(viewlist);
+            for (var i = 0; i < viewlist.length; i++) {
+                var view = viewlist[i];
+                var id = view.id;
+                this.views[id] = view;
+                console.log(id);
+            }
+            console.log(this.views);
+        };
+
+        App.prototype.DisplayTitles = function (intFlags) {
+            var titles = ""; 
+            titles = titles + this.AddTitle(intFlags, 0, "The Champion<br>");
+            titles = titles + this.AddTitle(intFlags, 1, "Big Bad Bruiser<br>");
+            titles = titles + this.AddTitle(intFlags, 2, "The Sun Blocker<br>");
+            titles = titles + this.AddTitle(intFlags, 3, "Robin of Gnomley<br>");
+            titles = titles + this.AddTitle(intFlags, 4, "Had A Bad Bow<br>");
+            titles = titles + this.AddTitle(intFlags, 5, "Captain Flapjack<br>");
+            titles = titles + this.AddTitle(intFlags, 6, "PitMaster Flambeau<br>");
+            titles = titles + this.AddTitle(intFlags, 7, "Phoenix, Risee<br>");
+            titles = titles + this.AddTitle(intFlags, 8, "Totally Disposable<br>");
+            titles = titles + this.AddTitle(intFlags, 9, "Came To Play<br>");
+            console.log("titles: " + titles);
+            document.getElementById("Titles").innerHTML = titles;
+            document.getElementById("TitlesMaster").innerHTML = titles;
+        }
+
+        App.prototype.AddTitle = function(int, flag, text) {
+            var result = "";
+            if ((int & (1 << flag)) != 0) {
+                result = text;
+            }
+            return result;
+        }
+
+
+
+        App.prototype.ShowView = function (id) {
+            this.HideAllViews();
+            this.views[id].style.display = "block";
+        };
+
+        App.prototype.OnShoot = function () {
+            this.Sound_Wif.play();
+            this.sendMessageToScreen('shoot');
+        };
+
+        App.prototype.OnDeathFire = function () {
+
+            this.Sound_Wilhelm.play();
+            this.ShowView("DeadFire");
+            this.airconsole.vibrate(500);
+        };
+
+        App.prototype.OnDeathStomp = function () {
+
+            this.Sound_Stomp1.play();
+            this.ShowView("DeadStomp");
+            this.airconsole.vibrate(500);
+        };
+
+        App.prototype.OnSpawned = function () {
+            this.ShowView("Playing");
+        };
+
+        App.prototype.OnEnterGame = function () {
+            this.ShowView("EnterGame");
+        };
+
+        App.prototype.OnPostGame = function () {
+            console.log("OnPostGame called");
+            this.ShowView("PostGame");
+        };
+
+        App.prototype.OnMasterPostGame = function () {
+            console.log("OnMasterPostGame called");
+            this.ShowView("MasterPostGame");
+        }
+
+        App.prototype.OnPreGame = function () {
+            //console.log("OnPreGame called");
+            this.ShowView("PreGame");
+        };
+
+        App.prototype.OnMasterPreGame = function () {
+            //console.log("OnMasterPreGame called");
+            this.ShowView("MasterPreGame");
+        }
+
+    
+
+
+    </script>
+</head>
+<body onload="window.app = new App()">
+    <!-- Add your HTML elements here -->
+    <img src="Title.png" />
+    <div>
+        <div id="profile-pic" ontouchstart="window.app.sendMessageToScreen('showprofile')"></div>
+    </div>
+
+    <div class="view" id="Playing">
+        <div class="button" ontouchstart="window.app.OnShoot()">Shoot</div>
+        <!--
+        <div>
+            <div class ="dpad-arrow" id="dpad-arrow-up"></div>
+            <div class ="dpad-arrow" id="dpad-arrow-down"></div>
+            <div class ="dpad-arrow" id="dpad-arrow-left"></div>
+            <div class ="dpad-arrow" id="dpad-arrow-right"></div>
+
+        </div>
+
+        -->
+        <div class="button" ontouchstart="window.app.sendMessageToScreen('left')" ontouchend="window.app.sendMessageToScreen('stop')">Left</div>
+        <div class="button" ontouchstart="window.app.sendMessageToScreen('right')" ontouchend="window.app.sendMessageToScreen('stop')">Right</div>
+        <div class="button" ontouchstart="window.app.sendMessageToScreen('up')" ontouchend="window.app.sendMessageToScreen('stop')">Up</div>
+        <div class="button" ontouchstart="window.app.sendMessageToScreen('down')" ontouchend="window.app.sendMessageToScreen('stop')">Down</div>
+
+    </div>
+
+    <div class="view" id="DeadFire">
+        <img src="gnomes_fire.gif" />
+        <br />You are Dead by fire!<br />
+        <div class="button" ontouchstart="window.app.sendMessageToScreen('respawn')">Respawn</div>
+    </div>
+
+    <div class="view" id="DeadStomp">
+        <img src="gnomes_stomp.png" />
+        <br />You are Dead by stomp!<br />
+        <div class="button" ontouchstart="window.app.sendMessageToScreen('respawn')">Respawn</div>
+    </div>
+
+    <div class="view" id="EnterGame">
+        <div class="button" ontouchstart="window.app.sendMessageToScreen('respawn')">Join Game</div>
+    </div>
+
+    <div class="view" id="PreGame">
+        Hold On! Game is about to begin!<br /><br />
+        Can't find yourself? Click the Profile picture to show it over your Gnome.<br /><br />
+        [Here: Thank Heroes or encourage going Hero] 
+    </div>
+
+    <div class="view" id="MasterPreGame">
+        When Ready, Start The Game
+        <div class="button" ontouchstart="window.app.sendMessageToScreen('startgame')">Start Game with Keyboard Dragon</div>
+        <div class="button" ontouchstart="window.app.sendMessageToScreen('startgameasdragon')">Start Game as Dragon</div>
+        <div class="button" >(Coming Soon)Play With AI Dragon</div>
+    </div>
+
+    <div class="view" id="PostGame">
+        Hurray! The Day is saved!
+        <div id="Titles"></div>
+    </div>
+
+    <div class="view" id="MasterPostGame">
+        <div class="button" ontouchstart="window.app.sendMessageToScreen('mainmenu')">Return to Main Menu</div>
+        <div id="TitlesMaster"></div>
+    </div>
+
+</body>
+</html>
